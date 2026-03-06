@@ -100,13 +100,6 @@ export interface PolicyPage {
   type: 'cancellation' | 'payment' | 'general';
 }
 
-// Keywords to find policy-related pages
-const POLICY_KEYWORDS = [
-  'cancellation', 'cancel', 'refund', 'policy', 'terms', 'conditions',
-  'booking', 'payment', 'deposit', 'cooling off', 'no visa', 'no place',
-  'covid', 'termination', 'withdrawal', 'guarantor', 'fee', 'installment'
-];
-
 // Priority links to check for policies
 const PRIORITY_LINKS = [
   '/cancellation', '/cancel', '/refund', '/terms', '/booking-terms',
@@ -120,7 +113,6 @@ async function createStealthContext(browser: Browser): Promise<BrowserContext> {
     viewport: { width: 1920, height: 1080 },
     locale: 'en-US',
     timezoneId: 'America/New_York',
-    // Add additional headers
     extraHTTPHeaders: {
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
       'Accept-Language': 'en-US,en;q=0.9',
@@ -143,8 +135,8 @@ async function createStealthContext(browser: Browser): Promise<BrowserContext> {
   return context;
 }
 
-async function extractPageContent(page: Page): Promise<{ title: string; content: string; links: string[] }> {
-  const result = await page.evaluate(() => {
+async function extractPageContent(page: Page, policyKeywords: string[]): Promise<{ title: string; content: string; links: string[] }> {
+  const result = await page.evaluate((keywords) => {
     // Remove unwanted elements
     const unwantedSelectors = [
       'nav', 'header', 'footer', 'script', 'style', 'noscript',
@@ -186,7 +178,7 @@ async function extractPageContent(page: Page): Promise<{ title: string; content:
       const href = a.getAttribute('href');
       const text = a.textContent?.toLowerCase() || '';
       if (href && (
-        POLICY_KEYWORDS.some(kw => href.toLowerCase().includes(kw) || text.includes(kw)) ||
+        keywords.some((kw: string) => href.toLowerCase().includes(kw) || text.includes(kw)) ||
         href.includes('terms') || href.includes('policy') || href.includes('cancel') || href.includes('refund')
       )) {
         links.push(href);
@@ -198,21 +190,28 @@ async function extractPageContent(page: Page): Promise<{ title: string; content:
       content,
       links: [...new Set(links)]
     };
-  });
+  }, policyKeywords);
 
   return result;
 }
 
-function isPolicyRelated(link: string, text: string): boolean {
+function isPolicyRelated(link: string, text: string, policyKeywords: string[]): boolean {
   const lowerLink = link.toLowerCase();
   const lowerText = text.toLowerCase();
 
-  return POLICY_KEYWORDS.some(kw =>
+  return policyKeywords.some(kw =>
     lowerLink.includes(kw) || lowerText.includes(kw)
   );
 }
 
 export async function scrapeWebsite(url: string): Promise<ScrapeResult> {
+  // Define keywords inside the function
+  const POLICY_KEYWORDS = [
+    'cancellation', 'cancel', 'refund', 'policy', 'terms', 'conditions',
+    'booking', 'payment', 'deposit', 'cooling off', 'no visa', 'no place',
+    'covid', 'termination', 'withdrawal', 'guarantor', 'fee', 'installment'
+  ];
+
   let browser: Browser | null = null;
 
   try {
@@ -268,7 +267,7 @@ export async function scrapeWebsite(url: string): Promise<ScrapeResult> {
     }
 
     // Extract content from main page
-    const mainPageContent = await extractPageContent(page);
+    const mainPageContent = await extractPageContent(page, POLICY_KEYWORDS);
     console.log(`[Scraper] Main page content extracted: ${mainPageContent.content.length} chars`);
 
     // Collect all policy-related content
@@ -321,7 +320,7 @@ export async function scrapeWebsite(url: string): Promise<ScrapeResult> {
 
         await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
-        const pageContent = await extractPageContent(page);
+        const pageContent = await extractPageContent(page, POLICY_KEYWORDS);
         if (pageContent.content.length > 100) {
           allContent.push(`\n\n--- Page: ${policyUrl} ---\n${pageContent.content}`);
         }
@@ -375,6 +374,12 @@ export async function scrapeWebsite(url: string): Promise<ScrapeResult> {
 
 // Function to scrape a specific page
 export async function scrapePage(url: string): Promise<ScrapeResult> {
+  const POLICY_KEYWORDS = [
+    'cancellation', 'cancel', 'refund', 'policy', 'terms', 'conditions',
+    'booking', 'payment', 'deposit', 'cooling off', 'no visa', 'no place',
+    'covid', 'termination', 'withdrawal', 'guarantor', 'fee', 'installment'
+  ];
+
   let browser: Browser | null = null;
 
   try {
@@ -400,7 +405,7 @@ export async function scrapePage(url: string): Promise<ScrapeResult> {
 
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
-    const pageContent = await extractPageContent(page);
+    const pageContent = await extractPageContent(page, POLICY_KEYWORDS);
 
     await browser.close();
 
