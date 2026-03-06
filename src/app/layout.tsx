@@ -14,24 +14,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Z.ai Code Scaffold - AI-Powered Development",
-  description: "Modern Next.js scaffold optimized for AI-powered development with Z.ai. Built with TypeScript, Tailwind CSS, and shadcn/ui.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
+  title: "Policy Extractor - Student Accommodation Policy Analysis",
+  description: "Extract cancellation and payment policies from student accommodation websites using AI-powered analysis with Gemini.",
+  keywords: ["Policy Extraction", "Student Accommodation", "Cancellation Policies", "Payment Policies", "Gemini AI", "Playwright"],
+  authors: [{ name: "Z.ai" }],
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "Policy Extractor Dashboard",
+    description: "AI-powered policy extraction for student accommodation websites",
+    siteName: "Policy Extractor",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    title: "Policy Extractor Dashboard",
+    description: "AI-powered policy extraction for student accommodation websites",
   },
 };
 
